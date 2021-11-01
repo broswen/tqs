@@ -16,8 +16,16 @@ type PublishMessageRequest struct {
 	Data       string            `json:"data"`
 }
 
+func (pm *PublishMessageRequest) Bind(r *http.Request) error {
+	return nil
+}
+
 type PublishMessageResponse struct {
 	Id string `json:"id"`
+}
+
+func (pm PublishMessageResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 type ReceiveMessageRequest struct {
@@ -26,8 +34,16 @@ type ReceiveMessageRequest struct {
 	Attributes map[string]string `json:"attributes"`
 }
 
+func (rm *ReceiveMessageRequest) Bind(r *http.Request) error {
+	return nil
+}
+
 type ReceiveMessageResponse struct {
 	Messages []Message `json:"messages"`
+}
+
+func (rm ReceiveMessageResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 type Message struct {
@@ -40,6 +56,14 @@ type Message struct {
 type AckMessageRequest struct {
 }
 
+func (am *AckMessageRequest) Bind(r *http.Request) error {
+	return nil
+}
+
 type AckMessageResponse struct {
 	Id string `json:"id"`
+}
+
+func (am AckMessageResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }

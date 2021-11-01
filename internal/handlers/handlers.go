@@ -8,18 +8,18 @@ import (
 
 func PublishMessageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		render.Render(w, r, &MessageResponse{Message: "OK"})
+		render.Render(w, r, &PublishMessageResponse{})
 	}
 }
 
 func ReceiveMessageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		render.Render(w, r, &MessageResponse{Message: "OK"})
+		render.Render(w, r, &ReceiveMessageResponse{})
 	}
 }
 
 func AckMessageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		render.Render(w, r, &MessageResponse{Message: "OK"})
+		render.Render(w, r, &AckMessageResponse{})
 	}
 }
