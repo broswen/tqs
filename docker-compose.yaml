@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  # backend:
+  #   build: .
+  #   command: sh -c "
+  #     sleep 4 &&
+  #     ./bin/tqs"
+  #   environment:
+  #     - PORT=8080
+  #   ports:
+  #     - "8080:8080"
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: tqs
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
