@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"testing"
 	"time"
-
-	"github.com/broswen/tqs/internal/message"
 )
 
 func TestMapRepInit(t *testing.T) {
@@ -20,7 +18,7 @@ func TestMapRepoSave(t *testing.T) {
 	if err != nil {
 		t.Fatalf("init repo: %v\n", err)
 	}
-	m := &message.Message{
+	m := &Message{
 		Topic: "test",
 		Data:  "test",
 	}
@@ -41,7 +39,7 @@ func TestMapRepoGet(t *testing.T) {
 	}
 
 	data := "test"
-	m := &message.Message{
+	m := &Message{
 		Topic: "test",
 		Data:  data,
 	}
@@ -54,7 +52,7 @@ func TestMapRepoGet(t *testing.T) {
 		t.Fatalf("message Id is not set\n")
 	}
 
-	m2 := &message.Message{
+	m2 := &Message{
 		Topic: m.Topic,
 		Id:    m.Id,
 	}
@@ -76,7 +74,7 @@ func TestMapRepoDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("init repo: %v\n", err)
 	}
-	m := &message.Message{
+	m := &Message{
 		Topic: "test",
 		Data:  "test",
 	}
@@ -100,12 +98,12 @@ func TestMapRepoReceive(t *testing.T) {
 	data := "test"
 	topic := "test"
 
-	repo.SaveMessage(&message.Message{Topic: topic, Data: data})
-	repo.SaveMessage(&message.Message{Topic: "wrong", Data: data})
+	repo.SaveMessage(&Message{Topic: topic, Data: data})
+	repo.SaveMessage(&Message{Topic: "wrong", Data: data})
 	// should ignore ack'd messages
-	repo.SaveMessage(&message.Message{Topic: "wrong", Data: data, Ack: time.Now()})
+	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Ack: time.Now()})
 	// should ignore expired messages
-	repo.SaveMessage(&message.Message{Topic: "wrong", Data: data, Expiration: time.Now().Add(-1 * time.Second)})
+	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Expiration: time.Now().Add(-1 * time.Second)})
 
 	messages, err := repo.GetMessagesByTopic(topic)
 	if err != nil {

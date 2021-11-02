@@ -5,16 +5,23 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-
-	"github.com/broswen/tqs/internal/message"
-	messages "github.com/broswen/tqs/internal/message"
 )
 
+type Message struct {
+	Id         string            `json:"id"`
+	Topic      string            `json:"topic"`
+	Attributes map[string]string `json:"attributes"`
+	Data       string            `json:"data"`
+	Visibility time.Time         `json:"-"` // when the message becomes visible
+	Ack        time.Time         `json:"-"` // when the message was acknowledged
+	Expiration time.Time         `json:"-"` // when the message will expire
+}
+
 type MessageRepository interface {
-	SaveMessage(message *messages.Message) error
-	GetMessage(message *messages.Message) error
-	DeleteMessage(message *messages.Message) error
-	GetMessagesByTopic(topic string) ([]messages.Message, error)
+	SaveMessage(message *Message) error
+	GetMessage(message *Message) error
+	DeleteMessage(message *Message) error
+	GetMessagesByTopic(topic string) ([]Message, error)
 }
 
 type MongoMessageRepository struct {
@@ -24,74 +31,74 @@ func NewMongoMessageRepository() (MongoMessageRepository, error) {
 	return MongoMessageRepository{}, nil
 }
 
-func (m MongoMessageRepository) SaveMessage(message *messages.Message) error {
+func (m MongoMessageRepository) SaveMessage(message *Message) error {
 	return nil
 }
 
-func (m MongoMessageRepository) Getmessage(message *messages.Message) error {
+func (m MongoMessageRepository) Getmessage(message *Message) error {
 	return nil
 }
 
-func (m MongoMessageRepository) DeleteMessage(message *messages.Message) error {
+func (m MongoMessageRepository) DeleteMessage(message *Message) error {
 	return nil
 }
 
-func (m MongoMessageRepository) GetMessagesByTopic(topic string) ([]messages.Message, error) {
-	return []messages.Message{}, nil
+func (m MongoMessageRepository) GetMessagesByTopic(topic string) ([]Message, error) {
+	return []Message{}, nil
 }
 
 type MapMessageRepository struct {
-	topics map[string]map[string]messages.Message
+	topics map[string]map[string]Message
 }
 
 func NewMapMessageRepository() (MapMessageRepository, error) {
 	return MapMessageRepository{
-		topics: make(map[string]map[string]messages.Message),
+		topics: make(map[string]map[string]Message),
 	}, nil
 }
 
-func (m MapMessageRepository) SaveMessage(message *messages.Message) error {
-	_, ok := m.topics[message.Topic]
+func (mr MapMessageRepository) SaveMessage(m *Message) error {
+	_, ok := mr.topics[m.Topic]
 	if !ok {
-		m.topics[message.Topic] = make(map[string]messages.Message)
+		mr.topics[m.Topic] = make(map[string]Message)
 	}
-	topic := m.topics[message.Topic]
-	message.Id = fmt.Sprintf("%d", rand.Intn(1000))
-	topic[message.Id] = *message
+	topic := mr.topics[m.Topic]
+	m.Id = fmt.Sprintf("%d", rand.Intn(1000))
+	topic[m.Id] = *m
 
 	return nil
 }
 
-func (m MapMessageRepository) GetMessage(message *message.Message) error {
-	topic, ok := m.topics[message.Topic]
+func (mr MapMessageRepository) GetMessage(m *Message) error {
+	topic, ok := mr.topics[m.Topic]
 	if !ok {
 		return errors.New("no messages for topic found")
 	}
 
-	m2, ok := topic[message.Id]
+	m2, ok := topic[m.Id]
 	if !ok {
 		return errors.New("no messages with id found in topic")
 	}
-	*message = m2
+	*m = m2
 	return nil
 }
 
-func (m MapMessageRepository) DeleteMessage(message *message.Message) error {
-	topic, ok := m.topics[message.Topic]
+func (mr MapMessageRepository) DeleteMessage(m *Message) error {
+	topic, ok := mr.topics[m.Topic]
 	if !ok {
 		return nil
 	}
 
-	delete(topic, message.Id)
+	delete(topic, m.Id)
 	return nil
 }
 
-func (m MapMessageRepository) GetMessagesByTopic(topicName string) ([]message.Message, error) {
-	topic, ok := m.topics[topicName]
+func (mr MapMessageRepository) GetMessagesByTopic(topicName string) ([]Message, error) {
+	topic, ok := mr.topics[topicName]
 	if !ok {
-		return []message.Message{}, nil
+		return []Message{}, nil
 	}
-	messages := make([]messages.Message, 0)
+	messages := make([]Message, 0)
 	for _, v := range topic {
 		if (v.Ack != time.Time{}) {
 

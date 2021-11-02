@@ -1,30 +1,25 @@
 package message
 
-import "time"
-
-type Message struct {
-	Id         string            `json:"id"`
-	Topic      string            `json:"topic"`
-	Attributes map[string]string `json:"attributes"`
-	Data       string            `json:"data"`
-	Visibility time.Time         `json:"-"` // when the message becomes visible
-	Ack        time.Time         `json:"-"` // when the message was acknowledged
-	Expiration time.Time         `json:"-"` // when the message will expire
-}
+import (
+	"github.com/broswen/tqs/internal/repository"
+)
 
 type MessageService struct {
+	repo repository.MessageRepository
 }
 
-func New() (MessageService, error) {
-	return MessageService{}, nil
+func New(repo repository.MessageRepository) (MessageService, error) {
+	return MessageService{
+		repo: repo,
+	}, nil
 }
 
-func (ms MessageService) Publish(message *Message) error {
+func (ms MessageService) Publish(message *repository.Message) error {
 	return nil
 }
 
-func (ms MessageService) Receive(topic string) ([]Message, error) {
-	return []Message{}, nil
+func (ms MessageService) Receive(topic string) ([]repository.Message, error) {
+	return []repository.Message{}, nil
 }
 
 func (ms MessageService) Ack(id string) error {
