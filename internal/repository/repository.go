@@ -63,7 +63,10 @@ func (mr MapMessageRepository) SaveMessage(m *Message) error {
 		mr.topics[m.Topic] = make(map[string]Message)
 	}
 	topic := mr.topics[m.Topic]
-	m.Id = fmt.Sprintf("%d", rand.Intn(1000))
+
+	if m.Id == "" {
+		m.Id = fmt.Sprintf("%d", rand.Intn(1000))
+	}
 	topic[m.Id] = *m
 
 	return nil
