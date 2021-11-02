@@ -12,7 +12,7 @@ type Message struct {
 	Topic      string            `json:"topic"`
 	Attributes map[string]string `json:"attributes"`
 	Data       string            `json:"data"`
-	Visibility time.Time         `json:"-"` // when the message becomes visible
+	Visible    time.Time         `json:"-"` // when the message becomes visible
 	Ack        time.Time         `json:"-"` // when the message was acknowledged
 	Expiration time.Time         `json:"-"` // when the message will expire
 }
@@ -100,11 +100,15 @@ func (mr MapMessageRepository) GetMessagesByTopic(topicName string) ([]Message, 
 	}
 	messages := make([]Message, 0)
 	for _, v := range topic {
+		// skip if acknowledged
 		if (v.Ack != time.Time{}) {
-
 			continue
 		}
-
+		// skip if not visibile
+		if time.Now().Before(v.Visible) {
+			continue
+		}
+		// skip if expired
 		if (v.Expiration != time.Time{}) && time.Now().After(v.Expiration) {
 			continue
 		}
