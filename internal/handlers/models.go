@@ -1,6 +1,9 @@
 package handlers
 
-import "net/http"
+import (
+	"errors"
+	"net/http"
+)
 
 type MessageResponse struct {
 	Message string `json:"message"`
@@ -17,6 +20,9 @@ type PublishMessageRequest struct {
 }
 
 func (pm *PublishMessageRequest) Bind(r *http.Request) error {
+	if pm.Topic == "" {
+		return errors.New("topic name is missing")
+	}
 	return nil
 }
 
@@ -35,6 +41,12 @@ type ReceiveMessageRequest struct {
 }
 
 func (rm *ReceiveMessageRequest) Bind(r *http.Request) error {
+	if rm.Topic == "" {
+		return errors.New("topic name is missing")
+	}
+	if rm.Limit == 0 {
+		rm.Limit = 1
+	}
 	return nil
 }
 
