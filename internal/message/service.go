@@ -1,6 +1,9 @@
 package message
 
 import (
+	"log"
+	"time"
+
 	"github.com/broswen/tqs/internal/repository"
 )
 
@@ -15,13 +18,36 @@ func New(repo repository.MessageRepository) (MessageService, error) {
 }
 
 func (ms MessageService) Publish(message *repository.Message) error {
-	return nil
+	if (message.Expiration == time.Time{}) {
+		// default expiration of 1 week
+		message.Expiration = time.Now().Add(24 * 7 * time.Hour)
+	}
+	err := ms.repo.SaveMessage(message)
+	return err
 }
 
 func (ms MessageService) Receive(topic string) ([]repository.Message, error) {
-	return []repository.Message{}, nil
+	messages, err := ms.repo.GetMessagesByTopic(topic)
+	m2 := make([]repository.Message, 0)
+	for _, m := range messages {
+		// set visibility timeout to 10 minutes
+		m.Visible = time.Now().Add(10 * time.Minute)
+		err := ms.repo.SaveMessage(&m)
+		if err != nil {
+			log.Printf("update visibility: %v\n", err)
+		}
+		m2 = append(m2, m)
+	}
+	return m2, err
 }
 
-func (ms MessageService) Ack(id string) error {
-	return nil
+func (ms MessageService) Ack(message *repository.Message) error {
+	err := ms.repo.GetMessage(message)
+	if err != nil {
+		return err
+	}
+	message.Ack = time.Now()
+
+	err = ms.repo.SaveMessage(message)
+	return err
 }
