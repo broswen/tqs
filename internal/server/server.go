@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/broswen/tqs/internal/handlers"
+	"github.com/broswen/tqs/internal/message"
+	"github.com/broswen/tqs/internal/repository"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/httplog"
 	"github.com/go-chi/render"
@@ -17,18 +19,29 @@ type Server interface {
 }
 
 type ChiServer struct {
-	logger zerolog.Logger
-	router chi.Router
+	logger         zerolog.Logger
+	router         chi.Router
+	messageService message.MessageService
 }
 
 func New() (ChiServer, error) {
+
+	repo, err := repository.NewMapMessageRepository()
+	if err != nil {
+		return ChiServer{}, err
+	}
+	service, err := message.New(repo)
+	if err != nil {
+		return ChiServer{}, err
+	}
 
 	logger := httplog.NewLogger("tqs", httplog.Options{
 		JSON: true,
 	})
 	server := ChiServer{
-		logger: logger,
-		router: chi.NewRouter(),
+		logger:         logger,
+		router:         chi.NewRouter(),
+		messageService: service,
 	}
 	server.SetRoutes()
 	return server, nil
@@ -52,7 +65,7 @@ func (s ChiServer) SetRoutes() {
 		w.Write([]byte("OK"))
 	})
 
-	s.router.Post("/message", handlers.PublishMessageHandler())
-	s.router.Get("/topic/{name}", handlers.ReceiveMessageHandler())
-	s.router.Put("/message/{id}", handlers.AckMessageHandler())
+	s.router.Post("/message", handlers.PublishMessageHandler(s.messageService))
+	s.router.Get("/topic/{name}", handlers.ReceiveMessageHandler(s.messageService))
+	s.router.Put("/message/{id}", handlers.AckMessageHandler(s.messageService))
 }
