@@ -47,7 +47,7 @@ func TestReceive(t *testing.T) {
 	service.Publish(&repository.Message{Topic: "a", Data: data})
 	service.Publish(&repository.Message{Topic: "b", Data: data})
 
-	messages, err := service.Receive(topic)
+	messages, err := service.Receive(topic, 10)
 	if err != nil {
 		t.Fatalf("Receive: %v\n", err)
 	}
@@ -56,7 +56,7 @@ func TestReceive(t *testing.T) {
 		t.Fatalf("expected 1 message but got %d\n", len(messages))
 	}
 
-	messages, err = service.Receive(topic)
+	messages, err = service.Receive(topic, 10)
 	if err != nil {
 		t.Fatalf("Receive: %v\n", err)
 	}
@@ -83,7 +83,7 @@ func TestAck(t *testing.T) {
 	service.Publish(&repository.Message{Topic: "a", Data: data})
 	service.Publish(&repository.Message{Topic: "b", Data: data})
 
-	messages, err := service.Receive(topic)
+	messages, err := service.Receive(topic, 10)
 	if err != nil {
 		t.Fatalf("Receive: %v\n", err)
 	}
