@@ -3,6 +3,8 @@ package handlers
 import (
 	"errors"
 	"net/http"
+
+	"github.com/broswen/tqs/internal/repository"
 )
 
 type MessageResponse struct {
@@ -40,32 +42,17 @@ type ReceiveMessageRequest struct {
 	Attributes map[string]string `json:"attributes"`
 }
 
-func (rm *ReceiveMessageRequest) Bind(r *http.Request) error {
-	if rm.Topic == "" {
-		return errors.New("topic name is missing")
-	}
-	if rm.Limit == 0 {
-		rm.Limit = 1
-	}
-	return nil
-}
-
 type ReceiveMessageResponse struct {
-	Messages []Message `json:"messages"`
+	Messages []repository.Message `json:"messages"`
 }
 
 func (rm ReceiveMessageResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-type Message struct {
-	Id         string            `json:"id"`
-	Topic      string            `json:"topic"`
-	Attributes map[string]string `json:"attributes"`
-	Data       string            `json:"data"`
-}
-
 type AckMessageRequest struct {
+	Topic string `json:"topic"`
+	Id    string `json:"id"`
 }
 
 func (am *AckMessageRequest) Bind(r *http.Request) error {

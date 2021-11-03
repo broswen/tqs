@@ -67,5 +67,5 @@ func (s ChiServer) SetRoutes() {
 
 	s.router.Post("/message", handlers.PublishMessageHandler(s.messageService))
 	s.router.Get("/topic/{name}", handlers.ReceiveMessageHandler(s.messageService))
-	s.router.Put("/message/{id}", handlers.AckMessageHandler(s.messageService))
+	s.router.Put("/topic/{name}/{id}", handlers.AckMessageHandler(s.messageService))
 }
