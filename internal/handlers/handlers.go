@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/broswen/tqs/internal/message"
 	"github.com/broswen/tqs/internal/repository"
@@ -38,11 +40,20 @@ func ReceiveMessageHandler(service message.MessageService) http.HandlerFunc {
 		topic := chi.URLParam(r, "name")
 		request.Topic = topic
 
+		query := r.URL.Query()
+		limit := strings.Join(query["limit"], "")
+		limitValue, err := strconv.Atoi(limit)
+		if err != nil {
+			request.Limit = 1
+		} else {
+			request.Limit = limitValue
+		}
+
 		if request.Topic == "" {
 			render.Render(w, r, ErrInvalidRequest(errors.New("topic name is missing")))
 			return
 		}
-		messages, err := service.Receive(request.Topic)
+		messages, err := service.Receive(request.Topic, request.Limit)
 		if err != nil {
 			log.Println(err)
 			render.Render(w, r, ErrInternalServer(err))

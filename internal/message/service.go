@@ -26,10 +26,14 @@ func (ms MessageService) Publish(message *repository.Message) error {
 	return err
 }
 
-func (ms MessageService) Receive(topic string) ([]repository.Message, error) {
+func (ms MessageService) Receive(topic string, limit int) ([]repository.Message, error) {
 	messages, err := ms.repo.GetMessagesByTopic(topic)
 	m2 := make([]repository.Message, 0)
+	count := 0
 	for _, m := range messages {
+		if count >= limit {
+			break
+		}
 		// set visibility timeout to 10 minutes
 		m.Visible = time.Now().Add(10 * time.Minute)
 		err := ms.repo.SaveMessage(&m)
@@ -37,6 +41,7 @@ func (ms MessageService) Receive(topic string) ([]repository.Message, error) {
 			log.Printf("update visibility: %v\n", err)
 		}
 		m2 = append(m2, m)
+		count++
 	}
 	return m2, err
 }
