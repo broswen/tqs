@@ -9,3 +9,7 @@ Created with Go and MongoDB.
 - Receiving messages from specific topics
 - Filtering messages on message attributes
 - Acknowledgement and visibility timeouts
+
+## Todo
+- [ ] handle mongodb and time.Time type conversion using int64
+- [ ] create helm chart for k8s deploy
