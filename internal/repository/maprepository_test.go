@@ -27,7 +27,7 @@ func TestMapRepoSave(t *testing.T) {
 		t.Fatalf("save mesage: %v\n", err)
 	}
 
-	if m.Id == "" {
+	if m.Id.IsZero() {
 		t.Fatalf("message Id is not set\n")
 	}
 }
@@ -48,7 +48,7 @@ func TestMapRepoGet(t *testing.T) {
 		t.Fatalf("save message: %v\n", err)
 	}
 
-	if m.Id == "" {
+	if m.Id.IsZero() {
 		t.Fatalf("message Id is not set\n")
 	}
 
@@ -101,9 +101,9 @@ func TestMapRepoReceive(t *testing.T) {
 	repo.SaveMessage(&Message{Topic: topic, Data: data})
 	repo.SaveMessage(&Message{Topic: "wrong", Data: data})
 	// should ignore ack'd messages
-	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Ack: time.Now()})
+	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Ack: time.Now().Unix()})
 	// should ignore expired messages
-	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Expiration: time.Now().Add(-1 * time.Second)})
+	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Expiration: time.Now().Add(-1 * time.Second).Unix()})
 
 	messages, err := repo.GetMessagesByTopic(topic)
 	if err != nil {

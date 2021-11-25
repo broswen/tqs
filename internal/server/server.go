@@ -26,7 +26,7 @@ type ChiServer struct {
 
 func New() (ChiServer, error) {
 
-	repo, err := repository.NewMapMessageRepository()
+	repo, err := repository.NewMongoMessageRepository()
 	if err != nil {
 		return ChiServer{}, err
 	}

@@ -59,6 +59,6 @@ Send a `PUT` request to the `/topic/{name}/{id}` endpoint to acknowledge a messa
 ```
 
 ## Todo
-- [ ] handle mongodb and time.Time type conversion using int64
+- [x] handle mongodb and time.Time type conversion using int64
 - [ ] create helm chart for k8s deploy
 - [ ] handle filtering by attributes

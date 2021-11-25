@@ -11,6 +11,7 @@ import (
 	"github.com/broswen/tqs/internal/repository"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func PublishMessageHandler(service message.MessageService) http.HandlerFunc {
@@ -30,7 +31,7 @@ func PublishMessageHandler(service message.MessageService) http.HandlerFunc {
 			render.Render(w, r, ErrInternalServer(err))
 			return
 		}
-		render.Render(w, r, &PublishMessageResponse{Id: message.Id})
+		render.Render(w, r, &PublishMessageResponse{Id: message.Id.Hex()})
 	}
 }
 
@@ -82,18 +83,23 @@ func AckMessageHandler(service message.MessageService) http.HandlerFunc {
 			render.Render(w, r, ErrInvalidRequest(errors.New("topic name is missing")))
 			return
 		}
+		oid, err := primitive.ObjectIDFromHex(request.Id)
+		if err != nil {
+			render.Render(w, r, ErrInvalidRequest(errors.New("invalid message id")))
+			return
+		}
 
 		message := &repository.Message{
-			Id:    request.Id,
+			Id:    oid,
 			Topic: request.Topic,
 		}
-		err := service.Ack(message)
+		err = service.Ack(message)
 		if err != nil {
 			log.Println(err)
 			render.Render(w, r, ErrInternalServer(err))
 			return
 		}
 
-		render.Render(w, r, &AckMessageResponse{Id: message.Id})
+		render.Render(w, r, &AckMessageResponse{Id: message.Id.Hex()})
 	}
 }

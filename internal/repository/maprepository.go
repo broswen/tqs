@@ -2,9 +2,10 @@ package repository
 
 import (
 	"errors"
-	"fmt"
-	"math/rand"
+	"log"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MapMessageRepository struct {
@@ -22,13 +23,26 @@ func (mr MapMessageRepository) SaveMessage(m *Message) error {
 	if !ok {
 		mr.topics[m.Topic] = make(map[string]Message)
 	}
+	m.Expiration = time.Now().Add(7 * 24 * time.Hour).Unix()
+	m.Visible = time.Now().Unix()
 	topic := mr.topics[m.Topic]
 
-	if m.Id == "" {
-		m.Id = fmt.Sprintf("%d", rand.Intn(1000))
-	}
-	topic[m.Id] = *m
+	m.Id = primitive.NewObjectID()
+	topic[m.Id.Hex()] = *m
 
+	return nil
+}
+
+func (mr MapMessageRepository) UpdateMessage(m *Message) error {
+	_, ok := mr.topics[m.Topic]
+	if !ok {
+		mr.topics[m.Topic] = make(map[string]Message)
+	}
+	topic := mr.topics[m.Topic]
+	if _, ok = topic[m.Id.Hex()]; !ok {
+		return errors.New("update message doesn't exist")
+	}
+	topic[m.Id.Hex()] = *m
 	return nil
 }
 
@@ -38,7 +52,7 @@ func (mr MapMessageRepository) GetMessage(m *Message) error {
 		return errors.New("no messages for topic found")
 	}
 
-	m2, ok := topic[m.Id]
+	m2, ok := topic[m.Id.Hex()]
 	if !ok {
 		return errors.New("no messages with id found in topic")
 	}
@@ -52,11 +66,12 @@ func (mr MapMessageRepository) DeleteMessage(m *Message) error {
 		return nil
 	}
 
-	delete(topic, m.Id)
+	delete(topic, m.Id.Hex())
 	return nil
 }
 
 func (mr MapMessageRepository) GetMessagesByTopic(topicName string) ([]Message, error) {
+	now := time.Now().Unix()
 	topic, ok := mr.topics[topicName]
 	if !ok {
 		return []Message{}, nil
@@ -64,18 +79,25 @@ func (mr MapMessageRepository) GetMessagesByTopic(topicName string) ([]Message, 
 	messages := make([]Message, 0)
 	for _, v := range topic {
 		// skip if acknowledged
-		if (v.Ack != time.Time{}) {
+		if v.Ack != 0 {
 			continue
 		}
-		// skip if not visibile
-		if time.Now().Before(v.Visible) {
+		// skip if not visible
+		if now < v.Visible {
 			continue
 		}
 		// skip if expired
-		if (v.Expiration != time.Time{}) && time.Now().After(v.Expiration) {
+		if now >= v.Expiration {
 			continue
 		}
+
+		v.Ack = time.Now().Unix()
+		if err := mr.UpdateMessage(&v); err != nil {
+			log.Printf("update message: %v\n", err)
+		}
+
 		messages = append(messages, v)
 	}
+
 	return messages, nil
 }

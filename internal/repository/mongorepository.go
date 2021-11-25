@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -45,27 +46,45 @@ func NewMongoMessageRepository() (MongoMessageRepository, error) {
 }
 
 func (mr MongoMessageRepository) SaveMessage(message *Message) error {
-	message.Expiration = time.Now().Add(7 * 24 * time.Hour)
-	message.Visible = time.Now()
+	if message.Expiration == 0 {
+		message.Expiration = time.Now().Add(7 * 24 * time.Hour).Unix()
+	}
+	if message.Visible == 0 {
+		message.Visible = time.Now().Unix()
+	}
 	result, err := mr.messages.InsertOne(context.TODO(), message)
 	if err != nil {
 		return err
 	}
-	message.Id = fmt.Sprintf("%v", result.InsertedID.(primitive.ObjectID).Hex())
+	message.Id = result.InsertedID.(primitive.ObjectID)
+	return nil
+}
+
+func (mr MongoMessageRepository) UpdateMessage(message *Message) error {
+	update := bson.D{}
+	if message.Visible != 0 {
+		update = append(update, bson.E{"$set", bson.D{{"visible", message.Visible}}})
+	}
+	if message.Expiration != 0 {
+		update = append(update, bson.E{"$set", bson.D{{"expiration", message.Expiration}}})
+	}
+	if message.Ack != 0 {
+		update = append(update, bson.E{"$set", bson.D{{"ack", message.Ack}}})
+	}
+	_, err := mr.messages.UpdateByID(context.TODO(), message.Id, update)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (mr MongoMessageRepository) GetMessage(message *Message) error {
-	oid, err := primitive.ObjectIDFromHex(message.Id)
-	if err != nil {
-		return err
-	}
-	result := mr.messages.FindOne(context.TODO(), bson.D{{"topic", message.Topic}, {"_id", oid}})
+	result := mr.messages.FindOne(context.TODO(), bson.D{{"topic", message.Topic}, {"_id", message.Id}})
 	if result.Err() != nil {
 		return result.Err()
 	}
 	var m2 Message
-	err = result.Decode(&m2)
+	err := result.Decode(&m2)
 
 	if err != nil {
 		return err
@@ -77,11 +96,7 @@ func (mr MongoMessageRepository) GetMessage(message *Message) error {
 }
 
 func (mr MongoMessageRepository) DeleteMessage(message *Message) error {
-	oid, err := primitive.ObjectIDFromHex(message.Id)
-	if err != nil {
-		return err
-	}
-	_, err = mr.messages.DeleteOne(context.TODO(), bson.D{{"topic", message.Topic}, {"_id", oid}})
+	_, err := mr.messages.DeleteOne(context.TODO(), bson.D{{"topic", message.Topic}, {"_id", message.Id}})
 	if err != nil {
 		return err
 	}
@@ -89,7 +104,17 @@ func (mr MongoMessageRepository) DeleteMessage(message *Message) error {
 }
 
 func (mr MongoMessageRepository) GetMessagesByTopic(topic string) ([]Message, error) {
-	cursor, err := mr.messages.Find(context.TODO(), bson.D{{"topic", topic}})
+	now := time.Now().Unix()
+	// only get messages where not ack'd
+	// visible is less than now
+	// expiration is greater than now
+	filter := bson.D{
+		{"topic", topic},
+		{"ack", 0},
+		{"visible", bson.D{{"$lte", now}}},
+		{"expiration", bson.D{{"$gt", now}}},
+	}
+	cursor, err := mr.messages.Find(context.TODO(), filter)
 	if err != nil {
 		return []Message{}, err
 	}
@@ -97,23 +122,15 @@ func (mr MongoMessageRepository) GetMessagesByTopic(topic string) ([]Message, er
 	messages := make([]Message, 0)
 
 	for cursor.Next(context.TODO()) {
+		// update each message with a new visible time
 		var m2 Message
 		if err = cursor.Decode(&m2); err != nil {
+			log.Printf("error decoding: %v\n", err)
 			continue
 		}
-
-		now := time.Now()
-
-		// TODO mongodb bson does not handle time.Time properly
-		if (m2.Ack != time.Time{}) {
-			continue
-		}
-		// skip if not visibile
-		if now.Before(m2.Visible) {
-			continue
-		}
-		// skip if expired
-		if (m2.Expiration != time.Time{}) && now.After(m2.Expiration) {
+		m2.Visible = time.Now().Add(1 * time.Minute).Unix()
+		if err = mr.UpdateMessage(&m2); err != nil {
+			log.Printf("error updating visibility timeout: %v\n", err)
 			continue
 		}
 		messages = append(messages, m2)

@@ -38,7 +38,7 @@ func TestMongoRepoSave(t *testing.T) {
 		t.Fatalf("save mesage: %v\n", err)
 	}
 
-	if m.Id == "" {
+	if m.Id.IsZero() {
 		t.Fatalf("message Id is not set\n")
 	}
 	fmt.Println(m.Id)
@@ -65,7 +65,7 @@ func TestMongoRepoGet(t *testing.T) {
 		t.Fatalf("save message: %v\n", err)
 	}
 
-	if m.Id == "" {
+	if m.Id.IsZero() {
 		t.Fatalf("message Id is not set\n")
 	}
 
@@ -122,16 +122,15 @@ func TestMongoRepoReceive(t *testing.T) {
 		t.Fatalf("init repo: %v\n", err)
 	}
 
-	data := "test"
 	topic := "test"
 
-	err = repo.SaveMessage(&Message{Topic: topic, Data: data})
-	// should ignore non visibile messages
-	err = repo.SaveMessage(&Message{Topic: topic, Data: "non visible", Visible: time.Now().Add(time.Hour)})
+	err = repo.SaveMessage(&Message{Topic: topic, Data: "ok"})
+	// should ignore non visible messages
+	err = repo.SaveMessage(&Message{Topic: topic, Data: "non visible", Visible: time.Now().Add(time.Hour).Unix()})
 	// should ignore ack'd messages
-	err = repo.SaveMessage(&Message{Topic: topic, Data: "acked", Ack: time.Now()})
+	err = repo.SaveMessage(&Message{Topic: topic, Data: "acked", Ack: time.Now().Unix()})
 	// should ignore expired messages
-	err = repo.SaveMessage(&Message{Topic: topic, Data: "expired", Expiration: time.Now().Add(-1 * time.Second)})
+	err = repo.SaveMessage(&Message{Topic: topic, Data: "expiration", Expiration: time.Now().Add(-1 * time.Second).Unix()})
 	if err != nil {
 		t.Fatalf("save message: %v\n", err)
 	}
