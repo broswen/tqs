@@ -64,3 +64,4 @@ Send a `PUT` request to the `/topic/{name}/{id}` endpoint to acknowledge a messa
 - [ ] implement limit in repo
 - [ ] create helm chart for k8s deploy
 - [ ] handle filtering by attributes
+- [ ] use PersistentVolume with mongo
