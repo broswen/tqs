@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tqs-service
+spec:
+  selector:
+    app: tqs
+  ports:
+    - port: 8080
+      targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tqs
+spec:
+  selector:
+    matchLabels:
+      app: tqs
+  template:
+    metadata:
+      labels:
+        app: tqs
+    spec:
+      containers:
+        - name: tqs
+          image: broswen/tqs:1.0.0
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: port
+                  name: tqs-configmap
+            - name: MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.host
+                  name: tqs-configmap
+            - name: MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.port
+                  name: tqs-configmap
+            - name: MONGODB_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.user
+                  name: tqs-configmap
+            - name: MONGODB_PASS
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb.pass
+                  name: tqs-secret
+            - name: MONGODB_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.db
+                  name: tqs-configmap
+          ports:
+            - containerPort: 8080
+      imagePullSecrets:
+        - name: regcred

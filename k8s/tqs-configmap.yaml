@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tqs-configmap
+data:
+  port: "8080"
+  mongodb.host: tqs-mongo
+  mongodb.port: "27017"
+  mongodb.user: tqs
+  mongodb.db: tqs

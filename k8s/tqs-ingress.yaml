@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tqs-ingress
+  labels:
+    name: tqs-ingress
+spec:
+  rules:
+    - host: tqs.broswen.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: tqs-service
+                port:
+                  number: 8080
