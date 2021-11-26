@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+data:
+  port: {{ .Values.port }}
+  mongodb.host: {{ .Values.mongodb.host }}
+  mongodb.port: {{ .Values.mongodb.port }}
+  mongodb.user: {{ .Values.mongodb.user }}
+  mongodb.db: {{ .Values.mongodb.db }}

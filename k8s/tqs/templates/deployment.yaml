@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tqs.fullname" . }}
+  labels:
+    {{- include "tqs.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "tqs.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tqs.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: port
+                  name: {{ .Release.Name }}-configmap
+            - name: MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.host
+                  name: {{ .Release.Name }}-configmap
+            - name: MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.port
+                  name: {{ .Release.Name }}-configmap
+            - name: MONGODB_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.user
+                  name: {{ .Release.Name }}-configmap
+            - name: MONGODB_PASS
+              valueFrom:
+                secretKeyRef:
+                  key: mongodb.pass
+                  name: {{ .Release.Name }}-secret
+            - name: MONGODB_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: mongodb.db
+                  name: {{ .Release.Name }}-configmap
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
