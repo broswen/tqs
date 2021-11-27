@@ -14,7 +14,11 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+tqs:
+  port: 8080
+
 mongodb:
+  host: tqs-mongo
   port: 27017
   password: "password"
   user: "tqs"

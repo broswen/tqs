@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-configmap
 data:
-  port: {{ .Values.port }}
+  port: {{ .Values.tqs.port | quote }}
   mongodb.host: {{ .Values.mongodb.host }}
   mongodb.port: {{ .Values.mongodb.port }}
   mongodb.user: {{ .Values.mongodb.user }}
