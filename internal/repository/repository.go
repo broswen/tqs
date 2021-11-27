@@ -18,6 +18,6 @@ type MessageRepository interface {
 	SaveMessage(message *Message) error
 	GetMessage(message *Message) error
 	DeleteMessage(message *Message) error
-	GetMessagesByTopic(topic string) ([]Message, error)
+	GetMessagesByTopic(topic string, limit int) ([]Message, error)
 	UpdateMessage(message *Message) error
 }

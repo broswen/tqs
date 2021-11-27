@@ -105,7 +105,7 @@ func TestMapRepoReceive(t *testing.T) {
 	// should ignore expired messages
 	repo.SaveMessage(&Message{Topic: "wrong", Data: data, Expiration: time.Now().Add(-1 * time.Second).Unix()})
 
-	messages, err := repo.GetMessagesByTopic(topic)
+	messages, err := repo.GetMessagesByTopic(topic, 10)
 	if err != nil {
 		t.Fatalf("get messages by topic: %v\n", err)
 	}

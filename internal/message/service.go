@@ -22,7 +22,7 @@ func (ms MessageService) Publish(message *repository.Message) error {
 }
 
 func (ms MessageService) Receive(topic string, limit int) ([]repository.Message, error) {
-	messages, err := ms.repo.GetMessagesByTopic(topic)
+	messages, err := ms.repo.GetMessagesByTopic(topic, limit)
 	if err != nil {
 		return nil, err
 	}

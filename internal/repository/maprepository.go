@@ -70,7 +70,7 @@ func (mr MapMessageRepository) DeleteMessage(m *Message) error {
 	return nil
 }
 
-func (mr MapMessageRepository) GetMessagesByTopic(topicName string) ([]Message, error) {
+func (mr MapMessageRepository) GetMessagesByTopic(topicName string, limit int) ([]Message, error) {
 	now := time.Now().Unix()
 	topic, ok := mr.topics[topicName]
 	if !ok {
@@ -97,6 +97,9 @@ func (mr MapMessageRepository) GetMessagesByTopic(topicName string) ([]Message, 
 		}
 
 		messages = append(messages, v)
+		if len(mesages) >= limit {
+			break
+		}
 	}
 
 	return messages, nil
