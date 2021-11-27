@@ -103,7 +103,7 @@ func (mr MongoMessageRepository) DeleteMessage(message *Message) error {
 	return nil
 }
 
-func (mr MongoMessageRepository) GetMessagesByTopic(topic string, limit int) ([]Message, error) {
+func (mr MongoMessageRepository) GetMessagesByTopic(topic string, limit int, attributes map[string]string) ([]Message, error) {
 	now := time.Now().Unix()
 	// only get messages where not ack'd
 	// visible is less than now
@@ -114,6 +114,8 @@ func (mr MongoMessageRepository) GetMessagesByTopic(topic string, limit int) ([]
 		{"visible", bson.D{{"$lte", now}}},
 		{"expiration", bson.D{{"$gt", now}}},
 	}
+	filters := MapToFilter(attributes)
+	filter = append(filter, filters...)
 	cursor, err := mr.messages.Find(context.TODO(), filter, options.Find().SetLimit(int64(limit)))
 	if err != nil {
 		return []Message{}, err
@@ -137,4 +139,13 @@ func (mr MongoMessageRepository) GetMessagesByTopic(topic string, limit int) ([]
 	}
 
 	return messages, nil
+}
+
+func MapToFilter(attributes map[string]string) []bson.E {
+	filters := make([]bson.E, 0)
+	for k, v := range attributes {
+		e := bson.E{fmt.Sprintf("attributes.%s", k), v}
+		filters = append(filters, e)
+	}
+	return filters
 }

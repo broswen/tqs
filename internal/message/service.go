@@ -21,8 +21,8 @@ func (ms MessageService) Publish(message *repository.Message) error {
 	return err
 }
 
-func (ms MessageService) Receive(topic string, limit int) ([]repository.Message, error) {
-	messages, err := ms.repo.GetMessagesByTopic(topic, limit)
+func (ms MessageService) Receive(topic string, limit int, attributes map[string]string) ([]repository.Message, error) {
+	messages, err := ms.repo.GetMessagesByTopic(topic, limit, attributes)
 	if err != nil {
 		return nil, err
 	}

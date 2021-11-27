@@ -47,7 +47,7 @@ func ReceiveMessageHandler(service message.MessageService) http.HandlerFunc {
 			render.Render(w, r, ErrInvalidRequest(errors.New("topic name is missing")))
 			return
 		}
-		messages, err := service.Receive(request.Topic, request.Limit)
+		messages, err := service.Receive(request.Topic, request.Limit, request.Attributes)
 		if err != nil {
 			log.Println(err)
 			render.Render(w, r, ErrInternalServer(err))
