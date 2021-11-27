@@ -57,6 +57,6 @@ Send a `PUT` request to the `/message/{id}` endpoint to acknowledge a message an
 - [x] create k8s deployment/files for simple hosting
 - [x] refactor endpoints to be more succinct
 - [x] implement limit in repo
-- [ ] create helm chart for automated k8s deploy
+- [x] create helm chart for automated k8s deploy
 - [ ] handle filtering by attributes
 - [ ] use PersistentVolume with mongo
