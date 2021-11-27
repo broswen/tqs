@@ -22,9 +22,9 @@ Send a `POST` request to the `/message` endpoint to publish a message to a speci
 }
 ```
 
-Send a `GET` request to the `/topic` endpoint to query for messages in a specific `topic`.
+Send a `POST` request to the `/topic` endpoint to query for messages in a specific `topic`.
 
-Use the `limit` property to specify how many to retrieve, and filter messages by the `attributes` property.
+Use the `limit` property to specify how many messages to retrieve, and filter messages by the `attributes` property.
 ```json
 {
   "topic": "topic name",
