@@ -46,13 +46,25 @@ type ReceiveMessageResponse struct {
 	Messages []repository.Message `json:"messages"`
 }
 
+func (rm *ReceiveMessageRequest) Bind(r *http.Request) error {
+	if rm.Topic == "" {
+		return errors.New("topic name is missing")
+	}
+	if rm.Limit == 0 {
+		rm.Limit = 1
+	}
+	if rm.Attributes == nil {
+		rm.Attributes = make(map[string]string)
+	}
+	return nil
+}
+
 func (rm ReceiveMessageResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
 type AckMessageRequest struct {
-	Topic string `json:"topic"`
-	Id    string `json:"id"`
+	Id string `json:"id"`
 }
 
 func (am *AckMessageRequest) Bind(r *http.Request) error {

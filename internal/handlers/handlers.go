@@ -4,8 +4,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/broswen/tqs/internal/message"
 	"github.com/broswen/tqs/internal/repository"
@@ -38,18 +36,13 @@ func PublishMessageHandler(service message.MessageService) http.HandlerFunc {
 func ReceiveMessageHandler(service message.MessageService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		request := &ReceiveMessageRequest{}
-		topic := chi.URLParam(r, "name")
-		request.Topic = topic
-
-		query := r.URL.Query()
-		limit := strings.Join(query["limit"], "")
-		limitValue, err := strconv.Atoi(limit)
-		if err != nil {
-			request.Limit = 1
-		} else {
-			request.Limit = limitValue
+		if err := render.Bind(r, request); err != nil {
+			render.Render(w, r, ErrInvalidRequest(err))
+			return
 		}
-
+		if request.Limit == 0 {
+			request.Limit = 1
+		}
 		if request.Topic == "" {
 			render.Render(w, r, ErrInvalidRequest(errors.New("topic name is missing")))
 			return
@@ -70,19 +63,13 @@ func AckMessageHandler(service message.MessageService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		request := &AckMessageRequest{}
 		id := chi.URLParam(r, "id")
-		topic := chi.URLParam(r, "name")
 		request.Id = id
-		request.Topic = topic
 
 		if request.Id == "" {
 			render.Render(w, r, ErrInvalidRequest(errors.New("message id is missing")))
 			return
 		}
 
-		if request.Topic == "" {
-			render.Render(w, r, ErrInvalidRequest(errors.New("topic name is missing")))
-			return
-		}
 		oid, err := primitive.ObjectIDFromHex(request.Id)
 		if err != nil {
 			render.Render(w, r, ErrInvalidRequest(errors.New("invalid message id")))
@@ -91,7 +78,6 @@ func AckMessageHandler(service message.MessageService) http.HandlerFunc {
 
 		message := &repository.Message{
 			Id:    oid,
-			Topic: request.Topic,
 		}
 		err = service.Ack(message)
 		if err != nil {

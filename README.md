@@ -22,7 +22,7 @@ Send a `POST` request to the `/message` endpoint to publish a message to a speci
 }
 ```
 
-Send a `GET` request to the `/topic/{name}` endpoint to query for messages in a specific `topic`.
+Send a `GET` request to the `/topic` endpoint to query for messages in a specific `topic`.
 
 Use the `limit` property to specify how many to retrieve, and filter messages by the `attributes` property.
 ```json
@@ -35,13 +35,7 @@ Use the `limit` property to specify how many to retrieve, and filter messages by
 }
 ```
 
-Send a `PUT` request to the `/topic/{name}/{id}` endpoint to acknowledge a message and remove it from the queue.
-```json
-{
-  "topic": "topic name",
-  "id": "message id"
-}
-```
+Send a `PUT` request to the `/message/{id}` endpoint to acknowledge a message and remove it from the queue.
 
 ## MongoDB Data Model
 ```json
@@ -61,8 +55,8 @@ Send a `PUT` request to the `/topic/{name}/{id}` endpoint to acknowledge a messa
 ## Todo
 - [x] handle mongodb and time.Time type conversion using int64
 - [x] create k8s deployment/files for simple hosting
-- [ ] refactor endpoints to be more succinct
-- [ ] implement limit in repo
+- [x] refactor endpoints to be more succinct
+- [x] implement limit in repo
 - [ ] create helm chart for automated k8s deploy
 - [ ] handle filtering by attributes
 - [ ] use PersistentVolume with mongo
