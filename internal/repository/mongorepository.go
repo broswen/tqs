@@ -46,12 +46,7 @@ func NewMongoMessageRepository() (MongoMessageRepository, error) {
 }
 
 func (mr MongoMessageRepository) SaveMessage(message *Message) error {
-	if message.Expiration == 0 {
-		message.Expiration = time.Now().Add(7 * 24 * time.Hour).Unix()
-	}
-	if message.Visible == 0 {
-		message.Visible = time.Now().Unix()
-	}
+	
 	result, err := mr.messages.InsertOne(context.TODO(), message)
 	if err != nil {
 		return err
@@ -114,7 +109,9 @@ func (mr MongoMessageRepository) GetMessagesByTopic(topic string, limit int, att
 		{"visible", bson.D{{"$lte", now}}},
 		{"expiration", bson.D{{"$gt", now}}},
 	}
+	// convert attributes map to mongo query filters
 	filters := MapToFilter(attributes)
+	// append converted filters
 	filter = append(filter, filters...)
 	cursor, err := mr.messages.Find(context.TODO(), filter, options.Find().SetLimit(int64(limit)))
 	if err != nil {

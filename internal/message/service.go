@@ -17,6 +17,12 @@ func New(repo repository.MessageRepository) (MessageService, error) {
 }
 
 func (ms MessageService) Publish(message *repository.Message) error {
+	if message.Expiration == 0 {
+		message.Expiration = time.Now().Add(7 * 24 * time.Hour).Unix()
+	}
+	if message.Visible == 0 {
+		message.Visible = time.Now().Unix()
+	}
 	err := ms.repo.SaveMessage(message)
 	return err
 }
