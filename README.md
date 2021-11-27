@@ -7,6 +7,7 @@ Created with Go and MongoDB.
 ## Features
 - Publishing messages to specific topics
 - Receiving messages from specific topics
+- Explicit acknowledgement of messages
 - Filtering messages on message attributes
 - Acknowledgement and visibility timeouts
 
