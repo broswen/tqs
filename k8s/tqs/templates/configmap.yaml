@@ -5,6 +5,6 @@ metadata:
 data:
   port: {{ .Values.tqs.port | quote }}
   mongodb.host: {{ .Values.mongodb.host }}
-  mongodb.port: {{ .Values.mongodb.port }}
+  mongodb.port: {{ .Values.mongodb.port | quote }}
   mongodb.user: {{ .Values.mongodb.user }}
   mongodb.db: {{ .Values.mongodb.db }}
