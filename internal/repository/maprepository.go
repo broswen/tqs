@@ -97,7 +97,7 @@ func (mr MapMessageRepository) GetMessagesByTopic(topicName string, limit int) (
 		}
 
 		messages = append(messages, v)
-		if len(mesages) >= limit {
+		if len(messages) >= limit {
 			break
 		}
 	}
