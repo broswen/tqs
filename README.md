@@ -11,6 +11,7 @@ Created with Go and MongoDB.
 - Filtering messages on message attributes
 - Acknowledgement and visibility timeouts
 - k8s and Helm chart for easy deployment
+- React SPA for API demo in `/frontend` folder
 
 ## Usage
 Send a `POST` request to the `/message` endpoint to publish a message to a specific `topic`.
