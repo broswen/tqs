@@ -9,6 +9,7 @@ import (
 	"github.com/broswen/tqs/internal/message"
 	"github.com/broswen/tqs/internal/repository"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httplog"
 	"github.com/go-chi/render"
 	"github.com/rs/zerolog"
@@ -59,6 +60,12 @@ func (s ChiServer) Start() error {
 func (s ChiServer) SetRoutes() {
 	s.router.Use(httplog.RequestLogger(s.logger))
 	s.router.Use(render.SetContentType(render.ContentTypeJSON))
+	s.router.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		MaxAge:         300, // Maximum value not ignored by any of major browsers
+	}))
 
 	// health check
 	s.router.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
