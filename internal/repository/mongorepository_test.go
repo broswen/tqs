@@ -135,7 +135,7 @@ func TestMongoRepoReceive(t *testing.T) {
 		t.Fatalf("save message: %v\n", err)
 	}
 
-	messages, err := repo.GetMessagesByTopic(topic, 10)
+	messages, err := repo.GetMessagesByTopic(topic, 10, map[string]string{})
 	if err != nil {
 		t.Fatalf("get messages by topic: %v\n", err)
 	}
