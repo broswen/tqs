@@ -63,3 +63,4 @@ Send a `PUT` request to the `/message/{id}` endpoint to acknowledge a message an
 - [x] create helm chart for automated k8s deploy
 - [x] handle filtering by attributes
 - [ ] refactor and add more tests
+- [x] test gpg key signing
